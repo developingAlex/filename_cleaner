@@ -1,4 +1,6 @@
-import os
+import os # to 'see' files in the executing directory
+import re # to use regular expression pattern matching
+MY_INVALID_CHARS_REGEX = r'[^a-z.A-Z_\-\+\[\]\(\)0-9\ ]'
 
 # go through the current directory and find any filenames that contain weird
 # characters, then for each unique weird character, ask the user a question
@@ -8,16 +10,26 @@ import os
 # the list of filenames and ask for a replacement for each one?'. and recurse 
 # through all subdirectories
 
+def contains_invalid_chars(filename, invalid_char_regex):
+  if re.search(invalid_char_regex, filename) == None:
+    return False
+  else:
+    return True
+
+
 current_directory = os.getcwd()
 files = os.listdir(current_directory)
 print(os.listdir(current_directory))
 
 for file in files:
+  print(' ') # separate results with a blank line
   print(file, end='')  # the second param requires python3:python3.5 fnclean.py
   if os.path.isdir(file):
     print(" is a directory")
   elif os.path.isfile(file):
     print(" is a file")
+    if contains_invalid_chars(file, MY_INVALID_CHARS_REGEX):
+      print("filename no good")
 
 
 # pseudocode would be: begin with a list of filenames (taken from the current
