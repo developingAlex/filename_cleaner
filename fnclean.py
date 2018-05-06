@@ -21,6 +21,9 @@ current_directory = os.getcwd()
 files = os.listdir(current_directory)
 print(os.listdir(current_directory))
 
+bad_files = [] # to be populated with offending filenames.
+bad_chars = set({}) # set to be populated with only distinct offending chars.
+
 for file in files:
   print(' ') # separate results with a blank line
   print(file, end='')  # the second param requires python3:python3.5 fnclean.py
@@ -30,7 +33,18 @@ for file in files:
     print(" is a file")
     if contains_invalid_chars(file, MY_INVALID_CHARS_REGEX):
       print("filename no good")
+      match = re.search(MY_INVALID_CHARS_REGEX, file)
+      if match:
+        print('The offending character is:' + file[match.start()])
+        bad_files.append(file)
+        char_matches = list(set(re.findall(MY_INVALID_CHARS_REGEX, file)))
+        for char in char_matches:
+          bad_chars.add(char)
 
+print("the bad files:")
+print(bad_files)
+print("the bad characters:")
+print(list(bad_chars))
 
 # pseudocode would be: begin with a list of filenames (taken from the current
 # directory), then as you go through the list, check that each filename consist
@@ -41,3 +55,11 @@ for file in files:
 # or "replace all occurances of this special character with a user defined
 # string" or "replace occurances case by case asking for a replacement for each"
 # repeat above for all other invalid characters.
+
+# [x] find all bad filenames in current directory 
+# [x] compile list of bad filenames
+# [x] add function to replace all occurances of bad character in string with new string (string inbuilt 'replace' method already does this)
+# [ ] compile list of bad characters appearing in those filenames
+# [ ] ?
+# [ ] ?
+# [ ] work with current directory AND all sub-directories
