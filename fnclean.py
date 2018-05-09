@@ -101,13 +101,18 @@ for char in bad_chars:
       if char in filename:
         new_filename = filename.replace(char,replacement)
         os.rename(filename, new_filename)
-        print("%s changed to %s" %(filename,new_filename,))
+        if verbose:
+          print("%s changed to %s" %(filename,new_filename,))
         
     # now since we may have changed filenames our bad_files list may not 
     #reflect reality anymore esp if some files had multiple invalid characters.
     reload_bad_files(bad_files) # to ensure our file lists reflects any changes
   if option == '2':
-    print("to be implemented: you chose 2")
+    for filename in bad_files:
+      if char in filename:
+        new_filename = filename.replace(char,'')
+        os.rename(filename, new_filename)
+    reload_bad_files(bad_files)
   if option == '3':
     print("to be implemented: you chose 3")
 
