@@ -78,6 +78,7 @@ for char in bad_chars:
   os.system('cls || clear') ## clear the screen for the user
   print("the %s character appears in the following files:" %(char,))
   files_listed_counter = 0
+  reload_bad_files(bad_files) # to ensure our file lists reflects any changes made from previous iterations
 
   for filename in bad_files:
     # print the list of filenames with this character in them:
@@ -98,24 +99,44 @@ for char in bad_chars:
   3. ask me for each file
   4. ignore this character
   (enter 1 2 3 or 4):""")
-  if option == '1':
-    replacement = input ("Enter character or text to replace %s with: " %(char,))
+  if option == '1': #replace the character in all filenames
+    replacement = input("Enter character or text to replace %s with: " %(char,))
     for filename in bad_files:
       if char in filename:
-        new_filename = filename.replace(char,replacement)
+        new_filename = filename.replace(char, replacement)
         os.rename(filename, new_filename)
         if verbose:
-          print("%s changed to %s" %(filename,new_filename,))
+          print("%s changed to %s" %(filename, new_filename,))
         
     # now since we may have changed filenames our bad_files list may not 
     #reflect reality anymore esp if some files had multiple invalid characters.
-    reload_bad_files(bad_files) # to ensure our file lists reflects any changes
-  if option == '2':
+  if option == '2': #delete the character from all filenames
     for filename in bad_files:
       if char in filename:
         new_filename = filename.replace(char,'')
         os.rename(filename, new_filename)
-    reload_bad_files(bad_files)
-  if option == '3':
-    print("to be implemented: you chose 3")
+    # reload_bad_files(bad_files)
+  if option == '3': #ask the user for each filename
+    for filename in bad_files:
+      if char in filename:
+        print("\nfilename: %s" %(filename,))
+        file_option = input("""
+        What do you want to do?
+        1. replace all instances in this filename
+        2. remove all instances in this filename
+        3. set a new filename
+        4. ignore this file
+        (enter 1 2 3 or 4):""")
+        if file_option == '1': #replace
+          replacement = input("Enter character or text to replace %s with: " %(char,))
+          new_filename = filename.replace(char, replacement)
+          os.rename(filename, new_filename)
+        if file_option == '2': # remove 
+          new_filename = filename.replace(char, '')
+          os.rename(filename, new_filename)
+        if file_option == '3': # set a new filename
+          new_filename = input("Enter the new filename for this file:")
+          os.rename(filename, new_filename)
+  
+          
     
