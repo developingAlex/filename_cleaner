@@ -10,9 +10,11 @@ verbose = False #turn off debugging helper output
 # characters, then for each unique weird character, ask the user a question
 # showing the first 15 or however many results of filenames containing that 
 # character and asking the user if they want to 'replace all instances of the
-# character with another character?', 'ignore the character', 'cycle through
-# the list of filenames and ask for a replacement for each one?'. and recurse 
-# through all subdirectories
+# character with another character?', 'delete the character', 
+# 'ignore the character', 'cycle through the list of filenames and ask for a 
+# replacement for each one?'. 
+# command line arguments:
+# -r recurse through all subdirectories
 
 def contains_invalid_chars(filename, invalid_char_regex):
   if re.search(invalid_char_regex, filename) == None:
@@ -93,8 +95,9 @@ for char in bad_chars:
   What do you want to do?
   1. replace all instances
   2. remove all instances
-  3. ask me for every single file
-  (enter 1 2 or 3):""")
+  3. ask me for each file
+  4. ignore this character
+  (enter 1 2 3 or 4):""")
   if option == '1':
     replacement = input ("Enter character or text to replace %s with: " %(char,))
     for filename in bad_files:
@@ -115,20 +118,4 @@ for char in bad_chars:
     reload_bad_files(bad_files)
   if option == '3':
     print("to be implemented: you chose 3")
-
-
-
-# pseudocode would be: begin with a list of filenames (taken from the current
-# directory), then as you go through the list, check that each filename consist
-# only of characters I consider to be valid: (a-zA-Z0-9.-_()[]+)
-#  when an invalid character is found, present to the user the offending 
-# filename along with at most 10 or 15 other offending filenames that contain
-# the same character, offer the user the options "ignore this special character"
-# or "replace all occurances of this special character with a user defined
-# string" or "replace occurances case by case asking for a replacement for each"
-# repeat above for all other invalid characters.
-
-# [x] find all bad filenames in current directory 
-# [x] compile list of bad filenames
-# [x] add function to replace all occurances of bad character in string with new string (string inbuilt 'replace' method already does this)
-# [ ] work with current directory AND all sub-directories
+    
