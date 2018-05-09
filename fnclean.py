@@ -4,6 +4,7 @@ import re # to use regular expression pattern matching
 # constants:
 MY_INVALID_CHARS_REGEX = r'[^a-z.A-Z_\-\+\[\]\(\)0-9\ ]'
 MY_LIMIT_FOR_FILE_LISTS = 6
+verbose = False #turn off debugging helper output
 
 # go through the current directory and find any filenames that contain weird
 # characters, then for each unique weird character, ask the user a question
@@ -31,35 +32,40 @@ def reload_bad_files(list_to_update):
 
 current_directory = os.getcwd()
 files = os.listdir(current_directory)
-print(os.listdir(current_directory))
 
 ##############################################
 # determine the files and the bad characters #
 ##############################################
 
 bad_files = [] # to be populated with offending filenames.
-bad_chars = set({}) # set to be populated with only distinct offending chars.
+bad_chars = set({}) # to be populated with only distinct offending chars.
 for file in files:
-  print(' ') # separate results with a blank line
-  print(file, end='')  # the second param requires python3:python3.5 fnclean.py
+  if verbose:
+    print(' ') # separate results with a blank line
+    print(file, end='')  # the second param requires python3:python3.5 fnclean.py
   if os.path.isdir(file):
-    print(" is a directory")
+    if verbose:
+      print(" is a directory")
   elif os.path.isfile(file):
-    print(" is a file")
+    if verbose:
+      print(" is a file")
     if contains_invalid_chars(file, MY_INVALID_CHARS_REGEX):
-      print("filename no good")
+      if verbose:
+        print("filename no good")
       match = re.search(MY_INVALID_CHARS_REGEX, file)
       if match:
-        print('The offending character is:' + file[match.start()])
+        if verbose:
+          print('The offending character is:' + file[match.start()])
         bad_files.append(file)
         char_matches = list(set(re.findall(MY_INVALID_CHARS_REGEX, file)))
         for char in char_matches:
           bad_chars.add(char)
 
-print("the bad files:")
-print(bad_files)
-print("the bad characters:")
-print(list(bad_chars))
+if verbose:
+  print("the bad files:")
+  print(bad_files)
+  print("the bad characters:")
+  print(list(bad_chars))
 
 ################################################################
 # cycle through the bad characters and present offending files #
@@ -67,7 +73,8 @@ print(list(bad_chars))
 
 
 for char in bad_chars:
-  print(" the %s character appears in the following files:" %(char,))
+  os.system('cls || clear') ## clear the screen for the user
+  print("the %s character appears in the following files:" %(char,))
   files_listed_counter = 0
 
   for filename in bad_files:
@@ -82,12 +89,12 @@ for char in bad_chars:
         else:
           continue
     # then ask the user what they want to do:
-  option = input("""What do you want to do?
+  option = input("""
+  What do you want to do?
   1. replace all instances
   2. remove all instances
   3. ask me for every single file
-  (enter 1 2 or 3)
-  """)
+  (enter 1 2 or 3):""")
   if option == '1':
     replacement = input ("Enter character or text to replace %s with: " %(char,))
     for filename in bad_files:
