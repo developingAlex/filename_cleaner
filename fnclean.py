@@ -1,13 +1,14 @@
 # dependencies:
 import os # to 'see' files in the executing directory
 import re # to use regular expression pattern matching
+import argparse # to parse command line arguments (python >= 3.2)
 
-# constants:
+# constants / default parameters:
 MY_INVALID_CHARS_REGEX = r'[^a-z.A-Z_\-\+\[\]\(\)0-9\ ]'
 MY_LIMIT_FOR_FILE_LISTS = 6
 VERBOSE = False #turn on/off debugging helper output
 RECURSE_HIDDEN_DIRECTORIES = False
-RECURSE_SUBDIRECTORIES = True
+RECURSE_SUBDIRECTORIES = False
 
 # go through the current directory (and optionally all subdirectories) and
 # find any filenames that contain invalid characters, then for each invalid
@@ -19,11 +20,56 @@ RECURSE_SUBDIRECTORIES = True
 # 'cycle through the list of filenames and ask for a replacement for each one
 # on a case by case basis'
 
-# proposed command line arguments:
-# -l n  override the default listing limit to show n entries
-# -v be verbose
-# -r recurse through all subdirectories
-# -h recurse even hidden directories
+#############################################
+# Inform argparse of command line arguments #
+#############################################
+
+parser = argparse.ArgumentParser(
+  description='Clean away invalid characters from filenames.'
+)
+
+parser.add_argument(
+  '-l', '--limit', 
+  metavar='NUM',
+  type=int, 
+  default=MY_LIMIT_FOR_FILE_LISTS, 
+  help='Print an initial maximum of NUM filenames before '
+    'checking to print the rest'
+)
+parser.add_argument(
+  '-v','--verbose',
+  help='Be verbose',
+  action='store_true'
+)
+parser.add_argument(
+  '-r',
+  '-R',
+  dest='recurse',
+  help='Recurse through all subdirectories',
+  action='store_true'
+)
+parser.add_argument(
+  '-a','--all',
+  help='Recurse all subdirectories, even hidden ones',
+  action='store_true'
+)
+
+######################################################
+# override parameters according to command line args #
+######################################################
+
+args = parser.parse_args()
+RECURSE_SUBDIRECTORIES = args.recurse
+RECURSE_HIDDEN_DIRECTORIES = args.all
+if RECURSE_HIDDEN_DIRECTORIES:
+  RECURSE_SUBDIRECTORIES = True # default recurse subs if doing hidden dirs
+VERBOSE = args.verbose
+MY_LIMIT_FOR_FILE_LISTS = args.limit
+
+
+####################
+# helper functions #
+####################
 
 def get_file_from_path(full_path):
   return full_path[full_path.rfind('/') + 1 : len(full_path)]
