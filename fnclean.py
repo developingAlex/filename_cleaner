@@ -61,10 +61,11 @@ parser.add_argument(
 args = parser.parse_args()
 RECURSE_SUBDIRECTORIES = args.recurse
 RECURSE_HIDDEN_DIRECTORIES = args.all
-if RECURSE_HIDDEN_DIRECTORIES:
-  RECURSE_SUBDIRECTORIES = True # default recurse subs if doing hidden dirs
 VERBOSE = args.verbose
 MY_LIMIT_FOR_FILE_LISTS = args.limit
+ # Take recursion of hidden directories to mean recursion of all directories
+if RECURSE_HIDDEN_DIRECTORIES:
+  RECURSE_SUBDIRECTORIES = True
 
 
 ####################
