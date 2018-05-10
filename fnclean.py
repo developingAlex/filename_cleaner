@@ -1,6 +1,7 @@
 # dependencies:
 import os # to 'see' files in the executing directory
 import re # to use regular expression pattern matching
+
 # constants:
 MY_INVALID_CHARS_REGEX = r'[^a-z.A-Z_\-\+\[\]\(\)0-9\ ]'
 MY_LIMIT_FOR_FILE_LISTS = 6
@@ -8,15 +9,21 @@ VERBOSE = False #turn on/off debugging helper output
 RECURSE_HIDDEN_DIRECTORIES = False
 RECURSE_SUBDIRECTORIES = True
 
-# go through the current directory and find any filenames that contain weird
-# characters, then for each unique weird character, ask the user a question
-# showing the first 15 or however many results of filenames containing that 
-# character and asking the user if they want to 'replace all instances of the
-# character with another character?', 'delete the character', 
-# 'ignore the character', 'cycle through the list of filenames and ask for a 
-# replacement for each one?'. 
-# command line arguments:
+# go through the current directory (and optionally all subdirectories) and
+# find any filenames that contain invalid characters, then for each invalid
+# character, show the first X offending files (or optionally all offending files)
+# containing that character and ask the user if they want to 
+# 'replace all instances of the character with another character', 
+# 'delete the character', 
+# 'ignore the character', 
+# 'cycle through the list of filenames and ask for a replacement for each one
+# on a case by case basis'
+
+# proposed command line arguments:
+# -l n  override the default listing limit to show n entries
+# -v be verbose
 # -r recurse through all subdirectories
+# -h recurse even hidden directories
 
 def get_file_from_path(full_path):
   return full_path[full_path.rfind('/') + 1 : len(full_path)]
