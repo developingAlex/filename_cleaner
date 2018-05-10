@@ -112,6 +112,10 @@ def identify_files(path, file_list, recurse):
           print("adding %s to general file list" %(file,))
         file_list.append(path + '/' + file)
 
+#######################################
+# determine all files to be inspected #
+#######################################
+
 if VERBOSE:
   print("\n\n###########\ncompiling list of all files to check\n\n")
 
@@ -160,10 +164,11 @@ if VERBOSE:
   print("the bad characters:")
   print(list(bad_chars))
 
-################################################################
-# cycle through the bad characters and present offending files #
-################################################################
-
+#####################################
+# cycle through the bad characters  #
+# present offending files           #
+# and ask user how to proceed       #
+#####################################
 
 if VERBOSE:
   print("\n\n###########\nCycling through bad characters\n\n")
