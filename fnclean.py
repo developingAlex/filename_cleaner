@@ -92,8 +92,15 @@ def reload_bad_files(list_to_update):
     if get_invalid_char(file, MY_INVALID_CHARS_REGEX):
       list_to_update.append(file)
 
+reported_paths_recursed = []
+
 def identify_files(path, file_list, recurse):
-  print("identifying files in %s" %(path,))
+  # as this function is rerun upon filename updates, keep track of what
+  # folders we have already reported to the user that we've checked to
+  # avoid repeating ourselves 
+  if path not in reported_paths_recursed:
+    print("identifying files in %s" %(path,))
+    reported_paths_recursed.append(path)
   files = os.listdir(path)
   for file in files:
       if VERBOSE:
