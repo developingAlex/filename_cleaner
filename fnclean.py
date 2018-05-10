@@ -4,7 +4,9 @@ import re # to use regular expression pattern matching
 # constants:
 MY_INVALID_CHARS_REGEX = r'[^a-z.A-Z_\-\+\[\]\(\)0-9\ ]'
 MY_LIMIT_FOR_FILE_LISTS = 6
-verbose = False #turn off debugging helper output
+VERBOSE = False #turn on/off debugging helper output
+RECURSE_HIDDEN_DIRECTORIES = False
+RECURSE_SUBDIRECTORIES = True
 
 # go through the current directory and find any filenames that contain weird
 # characters, then for each unique weird character, ask the user a question
@@ -16,54 +18,90 @@ verbose = False #turn off debugging helper output
 # command line arguments:
 # -r recurse through all subdirectories
 
-def contains_invalid_chars(filename, invalid_char_regex):
-  if re.search(invalid_char_regex, filename) == None:
-    return False
+def get_file_from_path(full_path):
+  return full_path[full_path.rfind('/') + 1 : len(full_path)]
+
+def get_invalid_char(full_path, invalid_char_regex):
+  filename = get_file_from_path(full_path)
+  match = re.search(invalid_char_regex, filename)
+  if match:
+    return filename[match.start()]
   else:
-    return True
+    return None
 
 def reload_bad_files(list_to_update):
   current_directory = os.getcwd()
-  files = os.listdir(current_directory)
+  files = []
+  identify_files(current_directory, files, RECURSE_SUBDIRECTORIES)
   list_to_update.clear()
   for file in files:
-    if contains_invalid_chars(file, MY_INVALID_CHARS_REGEX):
+    if get_invalid_char(file, MY_INVALID_CHARS_REGEX):
       list_to_update.append(file)
 
-  
+def identify_files(path, file_list, recurse):
+  print("identifying files in %s" %(path,))
+  files = os.listdir(path)
+  for file in files:
+      if VERBOSE:
+        print("considering %s" %(file,))
+        print("file[0] = %s" %(file[0],))
+      if os.path.isdir(path+'/'+file):
+        if recurse:
+          if RECURSE_HIDDEN_DIRECTORIES or file[0] != '.':
+            if VERBOSE:
+              print("checking contents of %s:" %(file))
+            identify_files(path + '/' + file, file_list, True)
+          else:
+            if VERBOSE:
+              print("ignoring hidden directories: %s" %(file))
+      if os.path.isfile(path+'/'+file) and file[0] != '.':
+        if VERBOSE:
+          print("adding %s to general file list" %(file,))
+        file_list.append(path + '/' + file)
 
+if VERBOSE:
+  print("\n\n###########\ncompiling list of all files to check\n\n")
+
+# get listing of files and directories
 current_directory = os.getcwd()
-files = os.listdir(current_directory)
+files = []
+
+if RECURSE_SUBDIRECTORIES:
+  identify_files(current_directory, files, True)
+else:
+  identify_files(current_directory, files, False)
+
 
 ##############################################
-# determine the files and the bad characters #
+# determine bad files and the bad characters #
 ##############################################
+
+if VERBOSE:
+  print("\n\n###########\ndetermining bad files and characters\n\n")
 
 bad_files = [] # to be populated with offending filenames.
 bad_chars = set({}) # to be populated with only distinct offending chars.
 for file in files:
-  if verbose:
+  if VERBOSE:
     print(' ') # separate results with a blank line
     print(file, end='')  # the second param requires python3:python3.5 fnclean.py
   if os.path.isdir(file):
-    if verbose:
-      print(" is a directory")
+    if VERBOSE:
+      print(" is a directory and its name is: %s" %(get_file_from_path(file)))
   elif os.path.isfile(file):
-    if verbose:
-      print(" is a file")
-    if contains_invalid_chars(file, MY_INVALID_CHARS_REGEX):
-      if verbose:
+    if VERBOSE:
+      print(" is a file and its filename is: %s" %(get_file_from_path(file)))
+    match = get_invalid_char(file, MY_INVALID_CHARS_REGEX)
+    if match:
+      if VERBOSE:
         print("filename no good")
-      match = re.search(MY_INVALID_CHARS_REGEX, file)
-      if match:
-        if verbose:
-          print('The offending character is:' + file[match.start()])
-        bad_files.append(file)
-        char_matches = list(set(re.findall(MY_INVALID_CHARS_REGEX, file)))
-        for char in char_matches:
-          bad_chars.add(char)
+        print('The offending character is:' + match)
+      bad_files.append(file)
+      char_matches = list(set(re.findall(MY_INVALID_CHARS_REGEX, get_file_from_path(file))))
+      for char in char_matches:
+        bad_chars.add(char)
 
-if verbose:
+if VERBOSE:
   print("the bad files:")
   print(bad_files)
   print("the bad characters:")
@@ -73,11 +111,16 @@ if verbose:
 # cycle through the bad characters and present offending files #
 ################################################################
 
+
+if VERBOSE:
+  print("\n\n###########\nCycling through bad characters\n\n")
+
+
 for char in bad_chars:
-  os.system('cls || clear') ## clear the screen for the user
+  # os.system('cls || clear') ## clear the screen for the user
+  reload_bad_files(bad_files) # to ensure our file lists reflects any changes made from previous iterations
   print("the %s character appears in the following files:" %(char,))
   files_listed_counter = 0
-  reload_bad_files(bad_files) # to ensure our file lists reflects any changes made from previous iterations
 
   for filename in bad_files:
     # print the list of filenames with this character in them:
@@ -104,7 +147,7 @@ for char in bad_chars:
       if char in filename:
         new_filename = filename.replace(char, replacement)
         os.rename(filename, new_filename)
-        if verbose:
+        if VERBOSE:
           print("%s changed to %s" %(filename, new_filename,))
         
   if option == '2': #delete the character from all filenames
