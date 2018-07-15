@@ -4,7 +4,8 @@ import re # to use regular expression pattern matching
 import argparse # to parse command line arguments (python >= 3.2)
 
 # constants / default parameters:
-MY_INVALID_CHARS_REGEX = r'[^a-z.A-Z_\-\+\[\]\(\)0-9\ ]'
+MY_INVALID_CHARS_REGEX = r'[^a-z.A-Z_\-\+\[\]\(\)0-9]'
+MY_INVALID_CHARS_REGEX_SPACES_VALID = r'[^a-z.A-Z_\-\+\[\]\(\)0-9\ ]'
 MY_LIMIT_FOR_FILE_LISTS = 6
 VERBOSE = False #turn on/off debugging helper output
 RECURSE_HIDDEN_DIRECTORIES = False
@@ -53,11 +54,15 @@ parser.add_argument(
   help='Recurse all subdirectories, even hidden ones',
   action='store_true'
 )
-
+parser.add_argument(
+  '-s','--spaces',
+  help='treat spaces as valid filename characters',
+  action='store_true'
+)
 ######################################################
 # override parameters according to command line args #
 ######################################################
-
+invalid_chars_regex = MY_INVALID_CHARS_REGEX
 args = parser.parse_args()
 RECURSE_SUBDIRECTORIES = args.recurse
 RECURSE_HIDDEN_DIRECTORIES = args.all
@@ -66,7 +71,8 @@ MY_LIMIT_FOR_FILE_LISTS = args.limit
  # Take recursion of hidden directories to mean recursion of all directories
 if RECURSE_HIDDEN_DIRECTORIES:
   RECURSE_SUBDIRECTORIES = True
-
+if args.spaces:
+  invalid_chars_regex = MY_INVALID_CHARS_REGEX_SPACES_VALID
 
 ####################
 # helper functions #
@@ -89,7 +95,7 @@ def reload_bad_files(list_to_update):
   identify_files(current_directory, files, RECURSE_SUBDIRECTORIES)
   list_to_update.clear()
   for file in files:
-    if get_invalid_char(file, MY_INVALID_CHARS_REGEX):
+    if get_invalid_char(file, invalid_chars_regex):
       list_to_update.append(file)
 
 reported_paths_recursed = []
@@ -156,13 +162,13 @@ for file in files:
   elif os.path.isfile(file):
     if VERBOSE:
       print(" is a file and its filename is: %s" %(get_file_from_path(file)))
-    match = get_invalid_char(file, MY_INVALID_CHARS_REGEX)
+    match = get_invalid_char(file, invalid_chars_regex)
     if match:
       if VERBOSE:
         print("filename no good")
         print('The offending character is:' + match)
       bad_files.append(file)
-      char_matches = list(set(re.findall(MY_INVALID_CHARS_REGEX, get_file_from_path(file))))
+      char_matches = list(set(re.findall(invalid_chars_regex, get_file_from_path(file))))
       for char in char_matches:
         bad_chars.add(char)
 
@@ -185,7 +191,7 @@ if VERBOSE:
 for char in bad_chars:
   # os.system('cls || clear') ## clear the screen for the user
   reload_bad_files(bad_files) # to ensure our file lists reflects any changes made from previous iterations
-  print("the %s character appears in the following files:" %(char,))
+  print("the '%s' character appears in the following files:" %(char,))
   files_listed_counter = 0
 
   for filename in bad_files:
@@ -208,7 +214,7 @@ for char in bad_chars:
   4. ignore this character
   (enter 1 2 3 or 4):""")
   if option == '1': #replace the character in all filenames
-    replacement = input("Enter character or text to replace %s with: " %(char,))
+    replacement = input("Enter character or text to replace '%s' with: " %(char,))
     for filename in bad_files:
       if char in filename:
         new_filename = filename.replace(char, replacement)
@@ -233,7 +239,7 @@ for char in bad_chars:
     4. ignore this file
     (enter 1 2 3 or 4):""")
         if file_option == '1': #replace
-          replacement = input("Enter character or text to replace %s with: " %(char,))
+          replacement = input("Enter character or text to replace '%s' with: " %(char,))
           new_filename = filename.replace(char, replacement)
           os.rename(filename, new_filename)
         if file_option == '2': # remove 
