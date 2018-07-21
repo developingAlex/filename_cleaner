@@ -248,3 +248,4 @@ for char in bad_chars:
         if file_option == '3': # set a new filename
           new_filename = input("Enter the new filename for this file:")
           os.rename(filename, new_filename)
+
